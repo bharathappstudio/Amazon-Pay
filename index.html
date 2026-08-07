@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Payment Request</title>
+  <!-- Library for generating QR Code -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    body {
+      background-color: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 16px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .header-title {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .amount {
+      font-size: 38px;
+      font-weight: 800;
+      color: #111827;
+      margin: 10px 0;
+    }
+    .upi-id {
+      background-color: #f9fafb;
+      border: 1px dashed #d1d5db;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #374151;
+      margin-bottom: 20px;
+      word-break: break-all;
+    }
+    .pay-btn {
+      background-color: #2563eb;
+      color: #ffffff;
+      display: block;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: background 0.2s ease;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+    .pay-btn:active {
+      background-color: #1d4ed8;
+    }
+    .divider {
+      margin: 20px 0;
+      color: #9ca3af;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .divider span {
+      padding: 0 10px;
+    }
+    #qrcode {
+      display: flex;
+      justify-content: center;
+      margin: 15px 0;
+    }
+    .footer {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header-title">Payment Request</div>
+  <div class="amount">₹1.00</div>
+  <div class="upi-id">Paying to: <strong>7094589909@amazonpay</strong></div>
+
+  <!-- Mobile UPI Trigger Button -->
+  <a id="upiButton" href="#" class="pay-btn">Pay ₹1 via Any UPI App</a>
+
+  <div class="divider"><span>OR SCAN QR CODE</span></div>
+
+  <!-- Dynamic QR Code Container -->
+  <div id="qrcode"></div>
+
+  <div class="footer">
+    Supported on Google Pay, PhonePe, Paytm, Amazon Pay & BHIM
+  </div>
+</div>
+
+<script>
+  // Configuration Details
+  const payeeVpa = "7094589909@amazonpay";
+  const payeeName = "Merchant";
+  const amount = "1.00";
+  const note = "Payment of Re 1";
+  const txnRef = "TXN" + Date.now();
+
+  // 1. Build standard NPCI UPI Deep Link Scheme
+  const upiUrl = `upi://pay?pa=${encodeURIComponent(payeeVpa)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}&tr=${txnRef}`;
+
+  // 2. Set button link for mobile devices
+  document.getElementById("upiButton").href = upiUrl;
+
+  // 3. Generate QR code for desktop scanning
+  new QRCode(document.getElementById("qrcode"), {
+    text: upiUrl,
+    width: 180,
+    height: 180,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M
+  });
+</script>
+
+</body>
+</html>
