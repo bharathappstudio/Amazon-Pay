@@ -3,14 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UPI Payment Request</title>
-  <!-- Library for generating QR Code -->
+  <title>UPI Direct Payment</title>
+  <!-- Library for generating dynamic QR Code -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Arial, sans-serif;
-    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
     body {
       background-color: #f3f4f6;
       display: flex;
@@ -24,48 +21,67 @@
       background: #ffffff;
       border-radius: 16px;
       padding: 24px;
-      max-width: 380px;
+      max-width: 400px;
       width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
-    .header-title {
-      font-size: 18px;
-      color: #333;
-      margin-bottom: 8px;
-    }
-    .amount {
-      font-size: 38px;
-      font-weight: 800;
-      color: #111827;
-      margin: 10px 0;
-    }
-    .upi-id {
+    h2 { margin: 0 0 16px 0; color: #111827; font-size: 20px; }
+    
+    .vpa-box {
       background-color: #f9fafb;
       border: 1px dashed #d1d5db;
-      padding: 8px 12px;
+      padding: 10px;
       border-radius: 8px;
       font-size: 14px;
       color: #374151;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       word-break: break-all;
     }
-    .pay-btn {
-      background-color: #2563eb;
-      color: #ffffff;
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      outline: none;
+    }
+    .form-group input:focus { border-color: #2563eb; }
+
+    /* Buttons */
+    .btn {
       display: block;
       width: 100%;
       padding: 14px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       border-radius: 10px;
       text-decoration: none;
-      transition: background 0.2s ease;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+      color: #fff;
+      margin-bottom: 10px;
+      border: none;
+      cursor: pointer;
+      text-align: center;
     }
-    .pay-btn:active {
-      background-color: #1d4ed8;
-    }
+    .btn-main { background-color: #2563eb; }
+    .btn-gpay { background-color: #4285f4; }
+    .btn-phonepe { background-color: #5f259f; }
+    .btn-paytm { background-color: #00baf2; }
+    .btn-amazon { background-color: #ff9900; color: #111; }
+
     .divider {
       margin: 20px 0;
       color: #9ca3af;
@@ -78,64 +94,92 @@
       flex: 1;
       border-bottom: 1px solid #e5e7eb;
     }
-    .divider span {
-      padding: 0 10px;
-    }
+    .divider span { padding: 0 10px; }
+
     #qrcode {
       display: flex;
       justify-content: center;
-      margin: 15px 0;
+      margin: 16px 0;
     }
-    .footer {
-      font-size: 12px;
-      color: #6b7280;
-      margin-top: 15px;
-    }
+    .footer-text { font-size: 12px; color: #6b7280; }
   </style>
 </head>
 <body>
 
 <div class="card">
-  <div class="header-title">Payment Request</div>
-  <div class="amount">₹1.00</div>
-  <div class="upi-id">Paying to: <strong>7094589909@amazonpay</strong></div>
+  <h2>UPI Payment</h2>
+  
+  <div class="vpa-box">
+    Payee VPA: <strong>7094589909@amazonpay</strong>
+  </div>
 
-  <!-- Mobile UPI Trigger Button -->
-  <a id="upiButton" href="#" class="pay-btn">Pay ₹1 via Any UPI App</a>
+  <div class="form-group">
+    <label for="amountInput">Enter Amount (₹):</label>
+    <!-- Default set to 5.00 to avoid bank 1-rupee spam blocks -->
+    <input type="number" id="amountInput" value="5.00" min="1" step="0.5">
+  </div>
+
+  <!-- Main Universal Button -->
+  <a id="btnUniversal" href="#" class="btn btn-main">Pay via Any Installed UPI App</a>
+
+  <div class="divider"><span>OR CHOOSE SPECIFIC APP</span></div>
+
+  <!-- Direct App Targets (Android Package Intents) -->
+  <a id="btnGpay" href="#" class="btn btn-gpay">Pay with Google Pay</a>
+  <a id="btnPhonePe" href="#" class="btn btn-phonepe">Pay with PhonePe</a>
+  <a id="btnPaytm" href="#" class="btn btn-paytm">Pay with Paytm</a>
+  <a id="btnAmazon" href="#" class="btn btn-amazon">Pay with Amazon Pay</a>
 
   <div class="divider"><span>OR SCAN QR CODE</span></div>
 
-  <!-- Dynamic QR Code Container -->
   <div id="qrcode"></div>
-
-  <div class="footer">
-    Supported on Google Pay, PhonePe, Paytm, Amazon Pay & BHIM
-  </div>
+  <div class="footer-text">Scan with any UPI app on another phone</div>
 </div>
 
 <script>
-  // Configuration Details
-  const payeeVpa = "7094589909@amazonpay";
-  const payeeName = "Merchant";
-  const amount = "1.00";
-  const note = "Payment of Re 1";
-  const txnRef = "TXN" + Date.now();
+  const VPA = "7094589909@amazonpay";
+  const NAME = "Merchant";
+  let qrCodeInstance = null;
 
-  // 1. Build standard NPCI UPI Deep Link Scheme
-  const upiUrl = `upi://pay?pa=${encodeURIComponent(payeeVpa)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}&tr=${txnRef}`;
+  function updatePaymentLinks() {
+    const amountVal = parseFloat(document.getElementById("amountInput").value || "1.00").toFixed(2);
+    const txnRef = "TXN" + Date.now();
+    const note = "Payment";
 
-  // 2. Set button link for mobile devices
-  document.getElementById("upiButton").href = upiUrl;
+    // 1. Standard Universal UPI URI
+    const upiUri = `upi://pay?pa=${encodeURIComponent(VPA)}&pn=${encodeURIComponent(NAME)}&am=${amountVal}&cu=INR&tn=${encodeURIComponent(note)}&tr=${txnRef}`;
 
-  // 3. Generate QR code for desktop scanning
-  new QRCode(document.getElementById("qrcode"), {
-    text: upiUrl,
-    width: 180,
-    height: 180,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.M
-  });
+    // 2. Android Direct Package Intents
+    const gpayIntent = `intent://pay?pa=${encodeURIComponent(VPA)}&pn=${encodeURIComponent(NAME)}&am=${amountVal}&cu=INR&tn=${encodeURIComponent(note)}&tr=${txnRef}#Intent;scheme=upi;package=com.google.android.apps.nps;end;`;
+    const phonepeIntent = `intent://pay?pa=${encodeURIComponent(VPA)}&pn=${encodeURIComponent(NAME)}&am=${amountVal}&cu=INR&tn=${encodeURIComponent(note)}&tr=${txnRef}#Intent;scheme=upi;package=com.phonepe.app;end;`;
+    const paytmIntent = `intent://pay?pa=${encodeURIComponent(VPA)}&pn=${encodeURIComponent(NAME)}&am=${amountVal}&cu=INR&tn=${encodeURIComponent(note)}&tr=${txnRef}#Intent;scheme=upi;package=net.one97.paytm;end;`;
+    const amazonIntent = `intent://pay?pa=${encodeURIComponent(VPA)}&pn=${encodeURIComponent(NAME)}&am=${amountVal}&cu=INR&tn=${encodeURIComponent(note)}&tr=${txnRef}#Intent;scheme=upi;package=in.amazon.mShop.android.shopping;end;`;
+
+    // Update Links
+    document.getElementById("btnUniversal").href = upiUri;
+    document.getElementById("btnGpay").href = gpayIntent;
+    document.getElementById("btnPhonePe").href = phonepeIntent;
+    document.getElementById("btnPaytm").href = paytmIntent;
+    document.getElementById("btnAmazon").href = amazonIntent;
+
+    // Refresh QR Code
+    const qrContainer = document.getElementById("qrcode");
+    qrContainer.innerHTML = "";
+    qrCodeInstance = new QRCode(qrContainer, {
+      text: upiUri,
+      width: 160,
+      height: 160,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+
+  // Event Listener for Amount Change
+  document.getElementById("amountInput").addEventListener("input", updatePaymentLinks);
+
+  // Initialize on page load
+  window.onload = updatePaymentLinks;
 </script>
 
 </body>
